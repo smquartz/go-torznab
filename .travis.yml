@@ -1,0 +1,13 @@
+language: go
+go:
+- 1.8.x
+- 1.10.x
+install:
+- go get -t github.com/smquartz/go-torznab/...
+script:
+- go test -v -covermode=count -coverprofile=coverage.out github.com/smquartz/go-torznab/torznab
+- "$HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken
+  $COVERALLS_TOKEN"
+env:
+  global:
+    secure: P5LFuedQAqzEg7F3F92Y/qvYM95hMH37j7+bb9NZxFO/h2HhQFIARSArxDOYpM6GB37ux2c+jvELPQKnvaLMMIpOQmBA7KEn9gw/nmRt5z3s1FErlsvcPHBDwrSW+Z+dmbY49q/VuvE/R4+KZRL0MwM5eRP/ARsLjrO0nw39sGCcop7cQ9z+rc966z8lA9k8BNyg4PZhOm7dA7IVGhQZY+fmdKqu5WYYsJUQwTnofkmvzDSWRWsAlUhEsKEuamwAkTdO2WIIGtvNxjpV3lBuB2EdwQXkbHIuvJr/daUG3WeRfsh6RO+fZqDIHdf2LvLbO1flnRVuvXXZcxTIZucj/NpagB2XclcmX89irlRObXksVDezSQX68+lP/dOjyUfNCQo90HbuLcaB8JlNjzN9JP25HnlechlVMywtKnUTdIXaCVc8q/ydfhuMRSfK89ESUmD6tI367H50RQrV7PM6J/dR+ibBSAkHWuPFd1jbkXKfqROMrsVUUyl++EYbUNH8HpoP+Q3KxM1XRZdvhT2DNjBd42andklVr0Hhfk4AvnzNERiBkMJlIsR29EmtUGqgPqh3IEKzpkmIEVAZZDNiS+Or98vt0aCYp8Wu8rQsocQmAmOy0kZ1mBBYAV1DinBAeNRTLRvFfGo5xMLN4/Dnsy7EZ6/13jFxzw1Eo3Mq1Js=
