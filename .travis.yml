@@ -4,6 +4,7 @@ go:
 - 1.10.x
 install:
 - go get -t github.com/smquartz/go-torznab/...
+- go get github.com/mattn/goveralls
 script:
 - go test -v -covermode=count -coverprofile=coverage.out github.com/smquartz/go-torznab/newznab
 - "$HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken
