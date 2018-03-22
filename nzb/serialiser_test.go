@@ -7,10 +7,18 @@ import (
 	"testing"
 )
 
-func TestNzb(t *testing.T) {
+func TestNzbSerialisation(t *testing.T) {
 	n, err := FromString(testNzb)
 	if err != nil {
 		t.Errorf("Failed to parse test XML; %v", err)
+	}
+	data, err := n.String()
+	if err != nil {
+		t.Errorf("Failed to marshal test NZB; %v", err)
+	}
+	n, err = FromString(data)
+	if err != nil {
+		t.Errorf("Failed to parse remarshalled test XML; %v", err)
 	}
 
 	if n.Meta["category"] != "TV > HD" {
@@ -54,6 +62,14 @@ func TestNzb(t *testing.T) {
 	n, err = FromBytes([]byte(testNzb))
 	if err != nil {
 		t.Errorf("Failed to parse test XML; %v", err)
+	}
+	data2, err := n.Bytes()
+	if err != nil {
+		t.Errorf("Failed to marshal test NZB; %v", err)
+	}
+	n, err = FromBytes(data2)
+	if err != nil {
+		t.Errorf("Failed to parse remarshalled test XML; %v", err)
 	}
 
 	if n.Meta["category"] != "TV > HD" {
@@ -142,6 +158,14 @@ func TestNzb(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to parse test XML; %v", err)
 	}
+	r2, err := n.BytesReader()
+	if err != nil {
+		t.Errorf("Failed to marshal test NZB; %v", err)
+	}
+	n, err = FromReader(r2)
+	if err != nil {
+		t.Errorf("Failed to parse remarshalled test XML; %v", err)
+	}
 
 	if n.Meta["category"] != "TV > HD" {
 		t.Errorf("Wrong category: %s", n.Meta["category"])
@@ -182,23 +206,11 @@ func TestNzb(t *testing.T) {
 	}
 }
 
-func TestMalformedNzb(t *testing.T) {
-	r := strings.NewReader(testMalformedNzb)
-	dec := xml.NewDecoder(r)
-	n := &NZB{}
-
-	err := dec.Decode(n)
-
-	if err == nil {
-		t.Errorf("Decode should have returned error")
-	} else {
-		t.Logf("Decode appropriately returned error: %v", err.Error())
-	}
-
+func TestMalformedNzbSerialisation(t *testing.T) {
 	w := bytes.NewBuffer(nil)
 	enc := xml.NewEncoder(w)
 
-	err = Meta{"</meta>Test": "</meta>Test", "Boop": "Beep", "Foo": "Bar"}.MarshalXML(enc, xml.StartElement{})
+	err := Meta{"</meta>Test": "</meta>Test", "Boop": "Beep", "Foo": "Bar"}.MarshalXML(enc, xml.StartElement{})
 	if err == nil {
 		t.Errorf("MarshalXML should have returned error")
 	} else {

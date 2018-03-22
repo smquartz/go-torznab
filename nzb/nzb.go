@@ -42,6 +42,25 @@ func (m *Meta) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	return nil
 }
 
+// MarshalXML implements xml.Marshaler for the Meta type
+func (m Meta) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	for k, v := range m {
+		tag := struct {
+			Type  string `xml:"type,attr"`
+			Value string `xml:",innerxml"`
+		}{
+			Type:  k,
+			Value: v,
+		}
+
+		if err := e.EncodeElement(&tag, start); err != nil {
+			return errors.Wrapf(err, "error encoding start element %v", 1, start.Name)
+		}
+	}
+
+	return nil
+}
+
 // Size returns the sum of the file sizes within the NZB
 func (nzb *NZB) Size() (size uint64) {
 	// iterate over all Files in the NZB
