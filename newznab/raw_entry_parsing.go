@@ -11,18 +11,28 @@ import (
 	"github.com/smquartz/errors"
 )
 
-func rawEntriesToEntries(raw rawEntries, baseURL url.URL, key string, userID int) (entries Entries, err error) {
+func rawEntriesToEntries(c *Client, raw rawEntries) (entries Entries, err error) {
 	for _, rawItem := range raw.Channel.Entries {
 		entry := new(Entry)
 		entry.General.Title = rawItem.Title
 		entry.General.Description = rawItem.Description
 		entry.Meta.Dates.Published = rawItem.Date.Add(0)
-		entry.Meta.Source.APIKey = key
-		entry.Meta.Source.Endpoint = baseURL
+		entry.Meta.Source.APIKey = c.APIKey
+		entry.Meta.Source.Endpoint = c.BaseURL
 
 		err = entry.AttributesFromRawEntry(rawItem)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error parsing attributes", 1)
+		}
+
+		err = entry.PopulateComments(c)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error populating comments", 1)
+		}
+
+		err = entry.PopulateFile(c)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error populating File", 1)
 		}
 
 		entries = append(entries, *entry)

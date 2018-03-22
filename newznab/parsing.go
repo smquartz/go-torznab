@@ -27,7 +27,7 @@ func (c *Client) entriesFromURL(u url.URL) (entries Entries, err error) {
 		return nil, errors.Errorf("response body contained error %d: %s", feed.ErrorCode, feed.ErrorDesc)
 	}
 
-	entries, err = rawEntriesToEntries(*feed, c.BaseURL, c.APIKey, c.APIUserID)
+	entries, err = rawEntriesToEntries(c, *feed)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error converting rawEntries into Entries", 1)
 	}

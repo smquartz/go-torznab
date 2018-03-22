@@ -39,7 +39,7 @@ type rawComment struct {
 	PublishedDate string `xml:"pubDate"`
 }
 
-// PopulateComments fetches and updates the Comments for the given newznab entry
+// populateComments fetches and updates the Comments for the given newznab entry
 func (entry *Entry) PopulateComments(c *Client) error {
 	data, err := c.getURLResponseBody(c.buildURL(ModePathAPI, url.Values{
 		"t":      []string{"comments"},
