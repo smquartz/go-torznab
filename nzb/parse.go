@@ -23,6 +23,11 @@ func FromString(data string) (*NZB, error) {
 	return FromReader(bytes.NewBufferString(data))
 }
 
+// FromBytes parses a NZB from a byte slice
+func FromBytes(data []byte) (*NZB, error) {
+	return FromReader(bytes.NewBuffer(data))
+}
+
 // FromReader parses a NZB from an io.Reader
 func FromReader(buf io.Reader) (*NZB, error) {
 	nzb := new(NZB)
