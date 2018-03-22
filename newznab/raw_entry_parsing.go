@@ -25,15 +25,26 @@ func rawEntriesToEntries(c *Client, raw rawEntries) (entries Entries, err error)
 			return nil, errors.Wrapf(err, "error parsing attributes", 1)
 		}
 
-		err = entry.PopulateComments(c)
-		if err != nil {
-			return nil, errors.Wrapf(err, "error populating comments", 1)
+		if torrent, ok := entry.File.(*TorrentFile); ok {
+			u, err := url.Parse(rawItem.Enclosure.URL)
+			if err != nil {
+				return nil, errors.Wrapf(err, "error parsing enclosure URL: %v", 1, rawItem.Enclosure.URL)
+			}
+			torrent.DownloadURL = *u
 		}
 
-		err = entry.PopulateFile(c)
-		if err != nil {
-			return nil, errors.Wrapf(err, "error populating File", 1)
-		}
+		/*
+			err = entry.PopulateComments(c)
+			if err != nil {
+				// return nil, errors.Wrapf(err, "error populating comments", 1)
+				log.Println(errors.Wrapf(err, "error populating comments", 1))
+			} */
+
+		/*
+			err = entry.PopulateFile(c)
+			if err != nil {
+				return nil, errors.Wrapf(err, "error populating File", 1)
+			}*/
 
 		entries = append(entries, *entry)
 	}
@@ -65,7 +76,7 @@ func (e *Entry) fromRawAttribute(raw rawAttribute) (err error) {
 	case strings.Contains("size,seeders,peers,infohash", raw.Name):
 		return e.fromRawFileAttribute(raw)
 	default:
-		return errors.Errorf("encountered unknown attribute %v: %v", raw.Name, raw.Value)
+		// return errors.Errorf("encountered unknown attribute %v: %v", raw.Name, raw.Value)
 	}
 	return nil
 }
@@ -96,13 +107,13 @@ func (e *Entry) fromRawMetaAttribute(raw rawAttribute) (err error) {
 			return errors.Wrapf(err, "error parsing rawEntry's ID: %s", 1, raw.Value)
 		}
 	case "grabs":
-		parsedUint, err := strconv.ParseUint(raw.Value, 0, 32)
+		parsedUint, err := strconv.ParseUint(raw.Value, 10, 64)
 		if err != nil {
 			return errors.Wrapf(err, "error parsing number of grabs: %v", 1, raw.Value)
 		}
 		e.Meta.Grabs = parsedUint
 	case "comments":
-		parsedUint, err := strconv.ParseUint(raw.Value, 0, 32)
+		parsedUint, err := strconv.ParseUint(raw.Value, 10, 64)
 		if err != nil {
 			return errors.Wrapf(err, "error parsing number of comments: %v", 1, raw.Value)
 		}
@@ -153,25 +164,30 @@ func (e *Entry) fromRawTVAttribute(raw rawAttribute) error {
 			e.Content.SetAired(parsedAirDate)
 		}
 	case "tvdbid":
-		parsedInt, err := strconv.ParseInt(raw.Value, 0, 64)
+		parsedInt, err := strconv.ParseInt(raw.Value, 10, 64)
 		if err != nil {
 			return errors.Wrapf(err, "error parsing TVDB ID: %v", 1, raw.Value)
 		}
 		tv.TVDBID = parsedInt
 	case "rageid":
-		parsedInt, err := strconv.ParseInt(raw.Value, 0, 64)
+		parsedInt, err := strconv.ParseInt(raw.Value, 10, 64)
 		if err != nil {
 			return errors.Wrapf(err, "error parsing TVRage ID: %v", 1, raw.Value)
 		}
 		tv.TVRageID = parsedInt
 	case "season":
-		parsedUint, err := strconv.ParseUint(raw.Value, 0, 64)
+		raw.Value = strings.Trim(strings.ToUpper(raw.Value), "S")
+		parsedUint, err := strconv.ParseUint(raw.Value, 10, 64)
 		if err != nil {
 			return errors.Wrapf(err, "error parsing season number: %v", 1, raw.Value)
 		}
 		tv.Season = uint(parsedUint)
 	case "episode":
-		parsedUint, err := strconv.ParseUint(raw.Value, 0, 64)
+		raw.Value = strings.Trim(strings.ToUpper(raw.Value), "E")
+		if strings.Contains(raw.Value, "/") {
+			raw.Value = strings.Split(raw.Value, "/")[1]
+		}
+		parsedUint, err := strconv.ParseUint(raw.Value, 10, 64)
 		if err != nil {
 			return errors.Wrapf(err, "error parsing episode number: %v", 1, raw.Value)
 		}
@@ -205,7 +221,7 @@ func (e *Entry) fromRawMovieAttribute(raw rawAttribute) error {
 
 	switch raw.Name {
 	case "imdb":
-		parsedInt, err := strconv.ParseInt(raw.Value, 0, 64)
+		parsedInt, err := strconv.ParseInt(raw.Value, 10, 64)
 		if err != nil {
 			return errors.Wrapf(err, "error parsing IMDB ID: %v", 1, raw.Value)
 		}
@@ -213,7 +229,7 @@ func (e *Entry) fromRawMovieAttribute(raw rawAttribute) error {
 	case "imdbtitle":
 		movie.IMDBTitle = raw.Value
 	case "imdbyear":
-		parsedUint, err := strconv.ParseUint(raw.Value, 0, 64)
+		parsedUint, err := strconv.ParseUint(raw.Value, 10, 64)
 		if err != nil {
 			return errors.Wrapf(err, "error parsing IMDB year: %v", 1, raw.Value)
 		}
@@ -265,19 +281,19 @@ func (e *Entry) fromRawTorrentAttribute(raw rawAttribute) error {
 
 	switch raw.Name {
 	case "size":
-		parsedUint, err := strconv.ParseUint(raw.Value, 0, 64)
+		parsedUint, err := strconv.ParseUint(raw.Value, 10, 64)
 		if err != nil {
 			return errors.Wrapf(err, "error parsing torrent contents size: %v", 1, raw.Value)
 		}
 		torrent.ContentsSize = parsedUint
 	case "seeders":
-		parsedUint, err := strconv.ParseUint(raw.Value, 0, 32)
+		parsedUint, err := strconv.ParseUint(raw.Value, 10, 64)
 		if err != nil {
 			return errors.Wrapf(err, "error parsing number of seeders: %v", 1, raw.Value)
 		}
 		torrent.Seeders = parsedUint
 	case "peers":
-		parsedUint, err := strconv.ParseUint(raw.Value, 0, 32)
+		parsedUint, err := strconv.ParseUint(raw.Value, 10, 64)
 		if err != nil {
 			return errors.Wrapf(err, "error parsing number of peers: %v", 1, raw.Value)
 		}
