@@ -36,11 +36,14 @@ type rawEntry struct {
 		Type   string `xml:"type,attr"`
 	} `xml:"enclosure,omitempty"`
 
-	Attributes []struct {
-		XMLName xml.Name
-		Name    string `xml:"name,attr"`
-		Value   string `xml:"value,attr"`
-	} `xml:"attr"`
+	Attributes []rawAttribute `xml:"attr"`
+}
+
+// rawAttribute describes a raw XML attribute
+type rawAttribute struct {
+	XMLName xml.Name
+	Name    string `xml:"name,attr"`
+	Value   string `xml:"value,attr"`
 }
 
 // rawEntries describes responses returned when searching for newznab entries

@@ -101,9 +101,7 @@ type TorrentFile struct {
 }
 
 // Size returns the size of the torrent contents in bytes
-func (t TorrentFile) Size() uint64 {
-	return t.ContentsSize
-}
+func (t TorrentFile) Size() uint64 { return t.ContentsSize }
 
 // URL returns a URL where the raw torrent file may be downloaded from
 func (t TorrentFile) URL() url.URL { return t.DownloadURL }
