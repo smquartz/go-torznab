@@ -3,6 +3,7 @@ package newznab
 import (
 	"encoding/xml"
 	"net/url"
+	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -41,9 +42,12 @@ type rawComment struct {
 
 // populateComments fetches and updates the Comments for the given newznab entry
 func (entry *Entry) PopulateComments(c *Client) error {
+	idStr := strings.Replace(entry.Meta.ID.String(), "-", "", -1)
+	log.Println("ID IS", idStr)
+
 	data, err := c.getURLResponseBody(c.buildURL(ModePathAPI, url.Values{
 		"t":      []string{"comments"},
-		"id":     []string{entry.Meta.ID.String()},
+		"id":     []string{idStr},
 		"apikey": []string{c.APIKey},
 	}))
 	if err != nil {

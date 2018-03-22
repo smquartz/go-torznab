@@ -1,6 +1,8 @@
 package newznab
 
 import (
+	"crypto/md5"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,6 +15,37 @@ import (
 	uuid "github.com/satori/go.uuid"
 	. "github.com/smartystreets/goconvey/convey"
 )
+
+func newMockServer() *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var f []byte
+		var err error
+
+		reg := regexp.MustCompile(`\W`)
+		fixedPath := reg.ReplaceAllString(r.URL.RawQuery, "_")
+
+		log.Info("Local fixture path: tests/fixtures" + r.URL.Path + "/" + fixedPath)
+
+		if r.URL.Query()["t"][0] == "get" {
+			// Fetch entry
+			entryID := r.URL.Query()["id"][0]
+			filePath := fmt.Sprintf("../tests/fixtures/entrys/%v.entry", entryID)
+			f, err = ioutil.ReadFile(filePath)
+		} else {
+			// Get xml
+			filePath := fmt.Sprintf("../tests/fixtures%v/%v.xml", r.URL.Path, fixedPath)
+			f, err = ioutil.ReadFile(filePath)
+		}
+
+		if err != nil {
+			log.Error(err)
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("File not found"))
+		} else {
+			w.Write(f)
+		}
+	}))
+}
 
 func TestUsenetCrawlerClient(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
@@ -115,20 +148,19 @@ func TestUsenetCrawlerClient(t *testing.T) {
 					So(len(results), ShouldBeGreaterThan, 0)
 				})
 
-				/*
-					Convey("I can populate the comments for an NZB.", func() {
-						entry := results[1]
-						So(len(entry.Meta.Comments.Comments), ShouldEqual, 0)
-						So(entry.Meta.Comments.Number, ShouldBeGreaterThan, 0)
-						err := entry.PopulateComments(client)
-						So(err, ShouldBeNil)
+				Convey("I can populate the comments for an NZB.", func() {
+					entry := results[1]
+					So(len(entry.Meta.Comments.Comments), ShouldEqual, 0)
+					So(entry.Meta.Comments.Number, ShouldBeGreaterThan, 0)
+					err := entry.PopulateComments(client)
+					So(err, ShouldBeNil)
 
-						for _, comment := range entry.Meta.Comments.Comments {
-							log.Info(comment)
-						}
+					for _, comment := range entry.Meta.Comments.Comments {
+						log.Info(comment)
+					}
 
-						So(len(entry.Meta.Comments.Comments), ShouldBeGreaterThan, 0)
-					}) */
+					So(len(entry.Meta.Comments.Comments), ShouldBeGreaterThan, 0)
+				})
 
 				Convey("I can get the download url.", func() {
 					url := client.EntryDownloadURL(results[0])
@@ -136,19 +168,18 @@ func TestUsenetCrawlerClient(t *testing.T) {
 					log.Infof("URL: %s", url.String())
 				})
 
-				/*
-					Convey("I can download the NZB.", func() {
-						bytes, err := client.DownloadEntry(results[0])
-						So(err, ShouldBeNil)
+				Convey("I can download the NZB.", func() {
+					bytes, err := client.DownloadEntry(results[0])
+					So(err, ShouldBeNil)
 
-						md5Sum := md5.Sum(bytes)
-						log.WithFields(log.Fields{
-							"num_bytes": len(bytes),
-							"md5":       base64.StdEncoding.EncodeToString(md5Sum[:]),
-						}).Info("downloaded")
+					md5Sum := md5.Sum(bytes)
+					log.WithFields(log.Fields{
+						"num_bytes": len(bytes),
+						"md5":       base64.StdEncoding.EncodeToString(md5Sum[:]),
+					}).Info("downloaded")
 
-						So(len(bytes), ShouldBeGreaterThan, 0)
-					}) */
+					So(len(bytes), ShouldBeGreaterThan, 0)
+				})
 			})
 		})
 
