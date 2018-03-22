@@ -25,7 +25,7 @@ func (n NZB) String() (string, error) {
 	return string(bdata), err
 }
 
-// BytesReader returns an io.Reader containg an NZB entry encoded in its
+// BytesReader returns an io.Reader containing an NZB entry encoded in its
 // original XML format
 func (n NZB) BytesReader() (io.Reader, error) {
 	data, err := n.Bytes()
