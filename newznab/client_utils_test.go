@@ -9,7 +9,7 @@ import (
 
 func TestBuildURL(t *testing.T) {
 	u, _ := url.Parse("https://domain.tld")
-	c := &Client{BaseURL: *u}
+	c := &Client{BaseURL: u}
 	u2 := c.buildURL(ModePathAPI, url.Values{
 		"t": []string{"a", "b", "c"},
 	})
@@ -25,7 +25,7 @@ func TestGetURLResponseBody(t *testing.T) {
 		t.Fatalf("Could not parse test URL")
 	}
 	c := &Client{HTTPClient: &http.Client{}}
-	data, err := c.getURLResponseBody(*testURL)
+	data, err := c.getURLResponseBody(testURL)
 	if err != nil {
 		t.Errorf("getURLResponseBody failed; %v", err.Error())
 	}
@@ -38,7 +38,7 @@ func TestGetURLResponseBody(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not parse test URL")
 	}
-	_, err = c.getURLResponseBody(*testURL)
+	_, err = c.getURLResponseBody(testURL)
 	if err == nil {
 		t.Errorf("getURLResponseBody should have errored")
 	}

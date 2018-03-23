@@ -49,7 +49,7 @@ type Movie struct {
 	// score of the movie as recorded by IMDB
 	IMDBScore float64
 	// URL for a cover image for the movie
-	Cover url.URL
+	Cover *url.URL
 }
 
 // IsContent is a dummy function that implements the Content interface

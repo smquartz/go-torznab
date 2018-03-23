@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"regexp"
 	"testing"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	uuid "github.com/satori/go.uuid"
@@ -87,10 +88,10 @@ func TestUsenetCrawlerClient(t *testing.T) {
 		u, err := url.Parse(ts.URL)
 		So(err, ShouldBeNil)
 		client := &Client{
-			BaseURL:    *u,
+			BaseURL:    u,
 			APIKey:     apiKey,
 			APIUserID:  1234,
-			HTTPClient: &http.Client{},
+			HTTPClient: &http.Client{Timeout: time.Second * 5},
 		}
 
 		Convey("I can search using simple query", func() {
@@ -109,10 +110,10 @@ func TestUsenetCrawlerClient(t *testing.T) {
 		u, err := url.Parse(ts.URL)
 		So(err, ShouldBeNil)
 		client := &Client{
-			BaseURL:    *u,
+			BaseURL:    u,
 			APIKey:     apiKey,
 			APIUserID:  1234,
-			HTTPClient: &http.Client{},
+			HTTPClient: &http.Client{Timeout: time.Second * 5},
 		}
 		categories := []Category{CategoryTVSD}
 
@@ -150,7 +151,7 @@ func TestUsenetCrawlerClient(t *testing.T) {
 
 				Convey("I can populate the comments for an NZB.", func() {
 					entry := results[1]
-					So(len(entry.Meta.Comments.Comments), ShouldEqual, 0)
+					So(len(entry.Meta.Comments.Comments), ShouldBeGreaterThan, 0)
 					So(entry.Meta.Comments.Number, ShouldBeGreaterThan, 0)
 					err := entry.PopulateComments(client)
 					So(err, ShouldBeNil)

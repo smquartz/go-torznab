@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	uuid "github.com/satori/go.uuid"
 	"github.com/smquartz/errors"
 )
@@ -30,21 +31,20 @@ func rawEntriesToEntries(c *Client, raw rawEntries) (entries Entries, err error)
 			if err != nil {
 				return nil, errors.Wrapf(err, "error parsing enclosure URL: %v", 1, rawItem.Enclosure.URL)
 			}
-			torrent.DownloadURL = *u
+			torrent.DownloadURL = u
 		}
 
-		/*
-			err = entry.PopulateComments(c)
-			if err != nil {
-				// return nil, errors.Wrapf(err, "error populating comments", 1)
-				log.Println(errors.Wrapf(err, "error populating comments", 1))
-			} */
+		err = entry.PopulateComments(c)
+		if err != nil {
+			// return nil, errors.Wrapf(err, "error populating comments", 1)
+			log.Println(errors.Wrapf(err, "error populating comments", 1))
+		}
 
-		/*
-			err = entry.PopulateFile(c)
-			if err != nil {
-				return nil, errors.Wrapf(err, "error populating File", 1)
-			}*/
+		entry.PopulateFile(c)
+		/* if err != nil {
+			// return nil, errors.Wrapf(err, "error populating File", 1)
+			log.Println(errors.Wrapf(err, "error populating File", 1))
+		} */
 
 		entries = append(entries, *entry)
 	}
@@ -246,7 +246,7 @@ func (e *Entry) fromRawMovieAttribute(raw rawAttribute) error {
 		if err != nil {
 			return errors.Wrapf(err, "error parsing cover URL: %v", 1, raw.Value)
 		}
-		movie.Cover = *u
+		movie.Cover = u
 	default:
 		return errors.Errorf("encountered unknown attribute %v: %v", raw.Name, raw.Value)
 	}

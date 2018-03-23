@@ -12,7 +12,7 @@ import (
 // entriesFromURL extracts newznab Entries from the response body returned
 // from the given URL.  entriesFromURL performs a GET request against the
 // given URL, and parses the response body, ultimately returning Entries.
-func (c *Client) entriesFromURL(u url.URL) (entries Entries, err error) {
+func (c *Client) entriesFromURL(u *url.URL) (entries Entries, err error) {
 	rsp, err := c.getURLResponseBody(u)
 	if err != nil {
 		return nil, errors.Wrap(err, 1)

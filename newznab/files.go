@@ -15,7 +15,7 @@ type File interface {
 	Size() uint64
 	// URL is a function which returns a url where the raw file being described
 	// may be downloaded from
-	URL() url.URL
+	URL() *url.URL
 	// Bytes is a function that returns the bytes of the actual file that File
 	// describes; e.g. it might return the bytes of a NZB or Torrent file,
 	// depending on the implementation
@@ -43,11 +43,11 @@ func (e *Entry) PopulateFile(c *Client) error {
 // NZBFile is a File implementation that describes a NZB
 type NZBFile struct {
 	nzb.NZB
-	DownloadURL url.URL
+	DownloadURL *url.URL
 }
 
 // URL returns a URL where the raw NZB file may be downloaded from
-func (n NZBFile) URL() url.URL { return n.DownloadURL }
+func (n NZBFile) URL() *url.URL { return n.DownloadURL }
 
 // Bytes returns the bytes of the usual XML representation of the NZB file
 func (n NZBFile) Bytes() ([]byte, error) { return n.Bytes() }
@@ -72,7 +72,7 @@ func (n *NZBFile) Populate(c *Client, e *Entry) error {
 
 	raw, err := c.getURLResponseBody(n.URL())
 	if err != nil {
-		return errors.Wrap(err, 1)
+		return errors.Wrapf(err, "error requesting NZB file", 1)
 	}
 
 	parsedNZB, err := nzb.FromBytes(raw)
@@ -97,14 +97,14 @@ type TorrentFile struct {
 	// bytes of the raw torrent file
 	Raw []byte
 	// URL to download torrent file from
-	DownloadURL url.URL
+	DownloadURL *url.URL
 }
 
 // Size returns the size of the torrent contents in bytes
 func (t TorrentFile) Size() uint64 { return t.ContentsSize }
 
 // URL returns a URL where the raw torrent file may be downloaded from
-func (t TorrentFile) URL() url.URL { return t.DownloadURL }
+func (t TorrentFile) URL() *url.URL { return t.DownloadURL }
 
 // Bytes returns the bytes of the raw torrent file
 func (t TorrentFile) Bytes() ([]byte, error) { return t.Raw, nil }
@@ -115,6 +115,9 @@ func (t TorrentFile) BytesReader() (io.Reader, error) { return bytes.NewBuffer(t
 // Populate populates the TorrentFile, with
 // the information contained within the raw torrent file.
 func (t *TorrentFile) Populate(c *Client, e *Entry) (err error) {
+	if t.URL() == nil {
+		return errors.Errorf("Empty download URL")
+	}
 	t.Raw, err = c.getURLResponseBody(t.URL())
 	if err != nil {
 		return errors.Wrap(err, 1)

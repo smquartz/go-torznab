@@ -10,7 +10,7 @@ import (
 // Source describes information relating to the source of an entry
 type Source struct {
 	// base endpoint of the indexer this entry was retrieved from
-	Endpoint url.URL
+	Endpoint *url.URL
 	// api key used to access the indexer that this entry was retrieved from
 	APIKey string
 }

@@ -12,7 +12,7 @@ func TestPopulateComments(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to parse mock server URL")
 	}
-	client := &Client{HTTPClient: &http.Client{}, BaseURL: *u, APIKey: "gibberish"}
+	client := &Client{HTTPClient: &http.Client{}, BaseURL: u, APIKey: "gibberish"}
 	categories := []Category{CategoryTVSD}
 	results, err := client.SearchWithTVRage(categories, 2870, 10, 1)
 	if err != nil {

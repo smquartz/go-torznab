@@ -6,7 +6,7 @@ import (
 )
 
 // EntryDownloadURL returns the URL to download the entry from
-func (c *Client) EntryDownloadURL(entry Entry) url.URL {
+func (c *Client) EntryDownloadURL(entry Entry) *url.URL {
 	return c.buildURL(ModePathAPI, url.Values{
 		"t":      []string{"get"},
 		"id":     []string{strings.Replace(entry.Meta.ID.String(), "-", "", -1)},

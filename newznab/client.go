@@ -22,7 +22,11 @@ type Client struct {
 	// an optional user ID to authenticate to the API with
 	APIUserID int
 	// the base URL to use for interactions with the API
-	BaseURL url.URL
+	BaseURL *url.URL
 	// http client to use for interactions with the API
 	HTTPClient *http.Client
+	// stores capability information retrieved from the API;
+	// this describes things like details on what is indexed, supported functions
+	// , etc
+	capabilities Capabilities
 }
